@@ -1,0 +1,26 @@
+SELECT t.hacker_id, h.name, co.c_created
+FROM (
+    SELECT c.c_created, COUNT(c.c_created) AS c_counted 
+    FROM (
+        SELECT COUNT(challenge_id) AS c_created
+        FROM Challenges
+        GROUP BY hacker_id
+        ) AS c
+    GROUP BY c.c_created
+    ) AS co INNER JOIN (
+        SELECT hacker_id, COUNT(challenge_id) AS t_created
+        FROM Challenges
+        GROUP BY hacker_id
+    ) AS t
+    ON co.c_created = t.t_created
+    INNER JOIN Hackers AS h
+    USING(hacker_id)
+WHERE co.c_created = (
+    SELECT MAX(c2.c_created)
+    FROM (
+        SELECT COUNT(challenge_id) AS c_created
+        FROM Challenges
+        GROUP BY hacker_id
+        ) AS c2
+) OR co.c_counted = 1
+ORDER BY co.c_created DESC, t.hacker_id ASC
